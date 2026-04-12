@@ -107,6 +107,7 @@ z-index:1000;">
           <option value="good">Добрі 🟢</option>
           <option value="medium">Середні 🟡</option>
           <option value="bad">Погані 🔴</option>
+          <option value="new">Нові слова 🆕</option>
         </select>
       </div>
       <button onclick="startTest()">Почати тест</button>
@@ -245,6 +246,7 @@ function startTest(){
       if(type==="good") return score>=5;
       if(type==="medium") return score>=0 && score<5;
       if(type==="bad") return score<0;
+      if(type === "new") return (w.correct || 0) === 0 && (w.wrong || 0) === 0;
     });
   }
 
@@ -603,6 +605,49 @@ function autoBackupCheck(){
   }
 }
 
+
+  async function hardReload(){
+  try {
+
+    // 🟢 0. ЗБЕРЕГТИ ПРОГРЕС ПЕРЕД ВСІМ
+    if(questions && questions.length > 0){
+      let fileName = (localStorage.getItem("fileName") || "backup.json");
+
+      let blob = new Blob([JSON.stringify(questions)], {type:"application/json"});
+      let a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName;
+      a.click();
+
+      // невелика пауза, щоб браузер встиг почати завантаження
+      await new Promise(res => setTimeout(res, 500));
+    }
+
+    // 🔵 1. Очистка кешу
+    if ('caches' in window) {
+      const names = await caches.keys();
+      await Promise.all(names.map(name => caches.delete(name)));
+    }
+
+    // 🔵 2. Видалення service workers
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (let reg of registrations) {
+        await reg.unregister();
+      }
+    }
+
+    // 🔴 3. Очистка localStorage (тепер безпечно, бо вже є backup)
+    localStorage.clear();
+
+    // 🔄 4. Reload
+    window.location.reload();
+
+  } catch (err) {
+    console.error("Hard reload error:", err);
+    alert("Помилка перезавантаження");
+  }
+}
 let backupTimeout;
 
 
