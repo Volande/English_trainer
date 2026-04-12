@@ -605,16 +605,7 @@ function autoBackupCheck(){
 
 let backupTimeout;
 
-document.addEventListener("visibilitychange", () => {
-  if(document.visibilityState === "hidden"){
-    clearTimeout(backupTimeout);
 
-    backupTimeout = setTimeout(() => {
-      doBackup();
-      save();
-    }, 500);
-  }
-});
 
 renderWords();
 </script>
