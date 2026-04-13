@@ -239,6 +239,15 @@ function startTest(){
   }
 
   const type=document.getElementById("testType").value;
+  
+  if(type === "adaptive"){
+  const adaptiveList = buildAdaptiveList(words);
+
+  document.getElementById("testCard").style.display="none";
+  runTest(adaptiveList);
+  return;
+}
+  
   let filtered=[...words];
 
   if(type!=="all"){
@@ -248,13 +257,7 @@ function startTest(){
       if(type==="medium") return score>=0 && score<5;
       if(type==="bad") return score<0;
       if(type === "new") return (w.correct || 0) === 0 && (w.wrong || 0) === 0;
-      if(type === "adaptive"){
-  const adaptiveList = buildAdaptiveList(words);
-
-  document.getElementById("testCard").style.display="none";
-  runTest(adaptiveList);
-  return;
-}
+      
     });
   }
 
