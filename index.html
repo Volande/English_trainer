@@ -241,7 +241,7 @@ function startTest(){
   const type=document.getElementById("testType").value;
   let filtered = [];
   
-  if(type !== "adaptive"){
+  if(type === "adaptive"){
     filtered  = buildAdaptiveList(words);
   }else {
     filtered = [...words]};
@@ -623,10 +623,10 @@ function autoBackupCheck(){
   try {
 
     // 🟢 0. ЗБЕРЕГТИ ПРОГРЕС ПЕРЕД ВСІМ
-    if(questions && questions.length > 0){
+    if(words && words.length > 0){
       let fileName = (localStorage.getItem("fileName") || "backup.json");
 
-      let blob = new Blob([JSON.stringify(questions)], {type:"application/json"});
+      let blob = new Blob([JSON.stringify(words)], {type:"application/json"});
       let a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = fileName;
