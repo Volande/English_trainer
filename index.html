@@ -241,7 +241,7 @@ function startTest(){
   const type=document.getElementById("testType").value;
   let filtered = [];
   
-  if(type === "adaptive"){
+  if(type !== "all" && type !== "adaptive"){
     filtered  = buildAdaptiveList(words);
   }else {
     filtered = [...words]};
@@ -683,9 +683,8 @@ function buildAdaptiveList(words){
     }
   });
 
-  return shuffle(pool); // ❗ без unique
+  return shuffle(pool); // ✅ правильний варіант
 }
-
   // перемішали
   pool = shuffle(pool);
 
@@ -702,6 +701,8 @@ function buildAdaptiveList(words){
 
   return unique;
 }
+
+  
 let backupTimeout;
 
 
