@@ -676,19 +676,14 @@ function buildAdaptiveList(words){
     if(correct === 0 && wrong === 0) weight = 6;
     else if(score < 0) weight = 5;
     else if(score < 5) weight = 3;
-    else weight = 1;
 
     for(let i=0;i<weight;i++){
       pool.push(w);
     }
   });
 
-  return shuffle(pool); // ✅ правильний варіант
-}
-  // перемішали
   pool = shuffle(pool);
 
-  // прибираємо дублікати, але зберігаємо вагу
   const unique = [];
   const seen = new Set();
 
@@ -700,6 +695,11 @@ function buildAdaptiveList(words){
   }
 
   return unique;
+}
+  // перемішали
+  
+
+  // прибираємо дублікати, але зберігаємо 
 
 
   
