@@ -242,7 +242,7 @@ function startTest(){
   let filtered = [];
   
   if(type === "adaptive"){
-  const adaptiveList = buildAdaptiveList(words);
+    filtered  = buildAdaptiveList(words);
   }else {
     filtered = [...words]};
 
@@ -673,28 +673,18 @@ function buildAdaptiveList(words){
 
     let weight = 1;
 
-    // 🆕 нові слова — максимум
-    if(correct === 0 && wrong === 0){
-      weight = 6;
-    }
-    // 🔴 погані
-    else if(score < 0){
-      weight = 5;
-    }
-    // 🟡 середні
-    else if(score < 5){
-      weight = 3;
-    }
-    // 🟢 добрі
-    else{
-      weight = 1;
-    }
+    if(correct === 0 && wrong === 0) weight = 6;
+    else if(score < 0) weight = 5;
+    else if(score < 5) weight = 3;
+    else weight = 1;
 
-    // додаємо слово N разів
     for(let i=0;i<weight;i++){
       pool.push(w);
     }
   });
+
+  return shuffle(pool); // ❗ без unique
+}
 
   // перемішали
   pool = shuffle(pool);
