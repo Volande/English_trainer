@@ -241,7 +241,7 @@ function startTest(){
   const type=document.getElementById("testType").value;
   let filtered = [];
   
-  if(type !== "all" && type !== "adaptive"){
+  if(type !== "adaptive"){
     filtered  = buildAdaptiveList(words);
   }else {
     filtered = [...words]};
