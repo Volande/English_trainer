@@ -239,16 +239,12 @@ function startTest(){
   }
 
   const type=document.getElementById("testType").value;
+  let filtered = [];
   
   if(type === "adaptive"){
   const adaptiveList = buildAdaptiveList(words);
-
-  document.getElementById("testCard").style.display="none";
-  runTest(adaptiveList);
-  return;
-}
-  
-  let filtered=[...words];
+  }else {
+    filtered = [...words]};
 
   if(type!=="all"){
     filtered=filtered.filter(w=>{
