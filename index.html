@@ -108,6 +108,7 @@ z-index:1000;">
           <option value="medium">Середні 🟡</option>
           <option value="bad">Погані 🔴</option>
           <option value="new">Нові слова 🆕</option>
+          <option value="adaptive">Адаптивний 🧠</option>
         </select>
       </div>
       <button onclick="startTest()">Почати тест</button>
@@ -247,6 +248,13 @@ function startTest(){
       if(type==="medium") return score>=0 && score<5;
       if(type==="bad") return score<0;
       if(type === "new") return (w.correct || 0) === 0 && (w.wrong || 0) === 0;
+      if(type === "adaptive"){
+  const adaptiveList = buildAdaptiveList(words);
+
+  document.getElementById("testCard").style.display="none";
+  runTest(adaptiveList);
+  return;
+}
     });
   }
 
@@ -342,7 +350,13 @@ function check(wordObj){
   currentIndex++;
 }
 
-function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
+function shuffle(array){
+  for(let i = array.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
 
 // --- Результати ---
 function showResults(){
@@ -647,6 +661,57 @@ function autoBackupCheck(){
     console.error("Hard reload error:", err);
     alert("Помилка перезавантаження");
   }
+}
+
+
+function buildAdaptiveList(words){
+  let pool = [];
+
+  words.forEach(w=>{
+    const correct = w.correct || 0;
+    const wrong = w.wrong || 0;
+    const score = correct - wrong;
+
+    let weight = 1;
+
+    // 🆕 нові слова — максимум
+    if(correct === 0 && wrong === 0){
+      weight = 6;
+    }
+    // 🔴 погані
+    else if(score < 0){
+      weight = 5;
+    }
+    // 🟡 середні
+    else if(score < 5){
+      weight = 3;
+    }
+    // 🟢 добрі
+    else{
+      weight = 1;
+    }
+
+    // додаємо слово N разів
+    for(let i=0;i<weight;i++){
+      pool.push(w);
+    }
+  });
+
+  // перемішали
+  pool = shuffle(pool);
+
+  // прибираємо дублікати, але зберігаємо вагу
+  const unique = [];
+  const seen = new Set();
+
+  for(let w of pool){
+    if(!seen.has(w.ua)){
+      unique.push(w);
+      seen.add(w.ua);
+    }
+  }
+
+  return unique;
 }
 let backupTimeout;
 
