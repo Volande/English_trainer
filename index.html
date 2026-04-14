@@ -715,16 +715,7 @@ let backupTimeout;
 
 renderWords();
 
-if ('serviceWorker' in navigator) {
-  try {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    for (let reg of registrations) {
-      await reg.unregister();
-    }
-  } catch(e){
-    console.warn("SW unregister error:", e);
-  }
-}
+if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js") .then(() => console.log("✅ SW registered")) .catch(err => console.error("❌ SW error", err)); }
 
   
 </script>
