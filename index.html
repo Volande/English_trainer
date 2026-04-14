@@ -241,22 +241,24 @@ function startTest(){
   const type=document.getElementById("testType").value;
   let filtered = [];
   
-  if(type === "adaptive"){
-    filtered  = buildAdaptiveList(words);
-  }else {
-    filtered = [...words]};
+ if(type === "adaptive"){
+  filtered = buildAdaptiveList(words);
+} else {
+  filtered = [...words];
 
-  if(type!=="all"){
-    filtered=filtered.filter(w=>{
+  if(type !== "all"){
+    filtered = filtered.filter(w=>{
       const score=(w.correct||0)-(w.wrong||0);
+
       if(type==="good") return score>=5;
       if(type==="medium") return score>=0 && score<5;
       if(type==="bad") return score<0;
-      if(type === "new") return (w.correct || 0) === 0 && (w.wrong || 0) === 0;
-      
+      if(type==="new") return (w.correct || 0) === 0 && (w.wrong || 0) === 0;
+
+      return false; // 🔴 ОБОВʼЯЗКОВО
     });
   }
-
+}
   filtered=shuffle(filtered);
   if(count<filtered.length) filtered=filtered.slice(0,count);
 
@@ -637,10 +639,14 @@ function autoBackupCheck(){
     }
 
     // 🔵 1. Очистка кешу
-    if ('caches' in window) {
-      const names = await caches.keys();
-      await Promise.all(names.map(name => caches.delete(name)));
-    }
+    if (typeof caches !== "undefined") {
+  try {
+    const names = await caches.keys();
+    await Promise.all(names.map(name => caches.delete(name)));
+  } catch(e){
+    console.warn("Cache delete error:", e);
+  }
+}
 
     // 🔵 2. Видалення service workers
     if ('serviceWorker' in navigator) {
@@ -651,7 +657,7 @@ function autoBackupCheck(){
     }
 
     // 🔴 3. Очистка localStorage (тепер безпечно, бо вже є backup)
-    localStorage.clear();
+     localStorage.removeItem("words");
 
     // 🔄 4. Reload
     window.location.reload();
@@ -709,10 +715,15 @@ let backupTimeout;
 
 renderWords();
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js")
-    .then(() => console.log("✅ SW registered"))
-    .catch(err => console.error("❌ SW error", err));
+if ('serviceWorker' in navigator) {
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    for (let reg of registrations) {
+      await reg.unregister();
+    }
+  } catch(e){
+    console.warn("SW unregister error:", e);
+  }
 }
 
   
