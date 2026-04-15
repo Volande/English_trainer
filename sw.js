@@ -1,61 +1,71 @@
-const CACHE_NAME = "vocab-app-v2";
+const CACHE_NAME = "vocab-app-v4";
 
-const ASSETS = [
-  "/",
-  "/index.html",
-  "/icon.png",
-
-  // якщо є
-  "/sw.js",
-
-  // Firebase (ВАЖЛИВО)
-  "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
-  "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js",
-  "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./icon.png",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
-self.addEventListener("install", e => {
+// INSTALL
+self.addEventListener("install", event => {
   console.log("✅ SW install");
+  self.skipWaiting();
 
-  e.waitUntil(
+  event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+      .then(cache => cache.addAll(APP_SHELL))
   );
 });
 
-// activate → чистимо старий кеш
-self.addEventListener("activate", e => {
+// ACTIVATE
+self.addEventListener("activate", event => {
   console.log("♻️ SW activate");
 
-  e.waitUntil(
+  event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys.map(k => {
-          if (k !== CACHE_NAME) return caches.delete(k);
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
         })
       )
     )
   );
+
+  self.clients.claim();
 });
 
-// fetch → cache-first
-self.addEventListener("fetch", e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => {
+// FETCH
+self.addEventListener("fetch", event => {
+  const url = new URL(event.request.url);
+
+  // 🔵 Firebase CDN — network first
+  if (url.origin.includes("gstatic.com")) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // 🟢 App shell — cache first
+  event.respondWith(
+    caches.match(event.request).then(cached => {
       if (cached) return cached;
 
-      return fetch(e.request)
+      return fetch(event.request)
         .then(res => {
-          // кешуємо нові ресурси
           return caches.open(CACHE_NAME).then(cache => {
-            cache.put(e.request, res.clone());
+            cache.put(event.request, res.clone());
             return res;
           });
         })
         .catch(() => {
-          // fallback якщо офлайн
-          if (e.request.mode === "navigate") {
-            return caches.match("/index.html");
+          if (event.request.mode === "navigate") {
+            return caches.match("./index.html");
           }
         });
     })
