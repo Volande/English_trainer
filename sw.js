@@ -41,18 +41,20 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
 
   const req = event.request;
+  const url = new URL(req.url);
 
-  // ❗ 1. ІГНОРУЄМО ВСЕ КРІМ GET
-  if (req.method !== "GET" || req.url.startsWith("https://")) {
-  return;
-}
+  // ❗ 1. тільки http/https
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    return;
+  }
 
-  // ❗ 2. ІГНОРУЄМО FIREBASE / API
-  if (
-    req.url.includes("firestore") ||
-    req.url.includes("googleapis") ||
-    req.url.includes("gstatic")
-  ) {
+  // ❗ 2. тільки GET
+  if (req.method !== "GET") {
+    return;
+  }
+
+  // ❗ 3. тільки свій домен (ДУЖЕ РЕКОМЕНДУЮ)
+  if (url.origin !== self.location.origin) {
     return;
   }
 
@@ -62,10 +64,7 @@ self.addEventListener("fetch", event => {
 
       return fetch(req).then(res => {
 
-        // ❗ 3. НЕ кешуємо погані відповіді
-        if (!res || res.status !== 200 || res.type === "opaque") {
-          return res;
-        }
+        if (!res || res.status !== 200) return res;
 
         return caches.open(CACHE_NAME).then(cache => {
           cache.put(req, res.clone());
