@@ -150,6 +150,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
@@ -165,32 +166,28 @@ function login(){
 }
 
 // автологін
-auth.onAuthStateChanged(u => {
+auth.onAuthStateChanged(async (u) => {
+  user = u;
+  authResolved = true;
 
   if (u) {
-    user = u;
-
     console.log("✅ Firebase user restored");
-
     document.getElementById("loginModal").style.display = "none";
 
     syncFromFirebase();
     autoBackupCheck();
+    return;
+  }
 
+  console.warn("⚠️ No Firebase user");
+
+  // ⛔ важливо: офлайн-логіка тільки після init
+  if (words && words.length > 0) {
+    console.log("🟢 Offline mode — allow access");
+    document.getElementById("loginModal").style.display = "none";
   } else {
-
-    console.warn("⚠️ No Firebase user");
-
-    // 🔥 ГОЛОВНЕ — якщо є локальні дані → пускаємо
-    if (words && words.length > 0) {
-      console.log("🟢 Offline mode — allow access");
-
-      document.getElementById("loginModal").style.display = "none";
-
-    } else {
-      console.log("🔴 Need login");
-      document.getElementById("loginModal").style.display = "flex";
-    }
+    console.log("🔴 Need login");
+    document.getElementById("loginModal").style.display = "flex";
   }
 });
 
