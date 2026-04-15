@@ -41,36 +41,43 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
 
   const req = event.request;
+
+  // ❗ 1. тільки GET
+  if (req.method !== "GET") return;
+
   const url = new URL(req.url);
 
-  // ❗ 1. тільки http/https
-  if (url.protocol !== "http:" && url.protocol !== "https:") {
-    return;
-  }
+  // ❗ 2. тільки http/https
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
 
-  // ❗ 2. тільки GET
-  if (req.method !== "GET") {
-    return;
-  }
-
-  // ❗ 3. тільки свій домен (ДУЖЕ РЕКОМЕНДУЮ)
-  if (url.origin !== self.location.origin) {
-    return;
-  }
+  // ❗ 3. тільки свій домен (КЛЮЧОВЕ)
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(req).then(cached => {
+    (async () => {
+
+      const cache = await caches.open(CACHE_NAME);
+
+      const cached = await cache.match(req);
       if (cached) return cached;
 
-      return fetch(req).then(res => {
+      try {
+        const res = await fetch(req);
 
-        if (!res || res.status !== 200) return res;
-
-        return caches.open(CACHE_NAME).then(cache => {
-          cache.put(req, res.clone());
+        // ❗ 4. перевірка відповіді
+        if (!res || res.status !== 200 || res.type !== "basic") {
           return res;
-        });
-      });
-    })
+        }
+
+        await cache.put(req, res.clone());
+        return res;
+
+      } catch (err) {
+        if (req.mode === "navigate") {
+          return cache.match("./index.html");
+        }
+      }
+
+    })()
   );
 });
