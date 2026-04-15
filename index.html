@@ -51,7 +51,7 @@ input, select, textarea {
   
 
   <div id="loginModal" style="
-position:fixed; top:0; left:0; width:100%; height:100%;
+display: none; position:fixed; top:0; left:0; width:100%; height:100%;
 background:rgba(0,0,0,0.5);  justify-content:center; align-items:center;
 z-index:1000;">
 <button style="position:absolute; top:20px; left:5px;" onclick="toggleLoginModal()">Х</button>
@@ -192,25 +192,21 @@ auth.onAuthStateChanged(async (u) => {
   resolveUI();
 });
 
-  function resolveUI() {
+function resolveUI() {
   const modal = document.getElementById("loginModal");
 
-  const hasLocalData = words && words.length > 0;
+  const hasWords = Array.isArray(words) && words.length > 0;
 
-  // 🔥 якщо є Firebase user
   if (user) {
     modal.style.display = "none";
     return;
   }
 
-  // 🟢 офлайн доступ
-  if (hasLocalData) {
-    console.log("🟢 Offline mode");
+  if (hasWords) {
     modal.style.display = "none";
     return;
   }
 
-  // 🔴 і тільки тут логін
   modal.style.display = "flex";
 }
 
@@ -786,7 +782,7 @@ function buildAdaptiveList(words){
 let backupTimeout;
 
 
-
+initApp();
 renderWords();
 
 if ("serviceWorker" in navigator) {
