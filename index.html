@@ -164,12 +164,32 @@ function login(){
 }
 
 // автологін
-auth.onAuthStateChanged(u=>{
-  if(u){
+auth.onAuthStateChanged(u => {
+
+  if (u) {
     user = u;
+
+    console.log("✅ Firebase user restored");
+
     document.getElementById("loginModal").style.display = "none";
+
     syncFromFirebase();
     autoBackupCheck();
+
+  } else {
+
+    console.warn("⚠️ No Firebase user");
+
+    // 🔥 ГОЛОВНЕ — якщо є локальні дані → пускаємо
+    if (words && words.length > 0) {
+      console.log("🟢 Offline mode — allow access");
+
+      document.getElementById("loginModal").style.display = "none";
+
+    } else {
+      console.log("🔴 Need login");
+      document.getElementById("loginModal").style.display = "flex";
+    }
   }
 });
 
