@@ -142,6 +142,8 @@ z-index:1000;">
 
 
 <script>
+words = JSON.parse(localStorage.getItem("words") || "[]");
+renderWords();
 
 let appReady = false;
 let authResolved = false;
@@ -156,7 +158,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
@@ -174,36 +176,42 @@ function login(){
 // автологін
 auth.onAuthStateChanged(async (u) => {
   user = u;
-  authResolved = true;
+
+  console.log("AUTH STATE:", u);
 
   if (u) {
-    await syncFromFirebase();
-    autoBackupCheck();
+    try {
+      await syncFromFirebase();
+      autoBackupCheck();
+    } catch(e) {
+      console.warn("sync failed", e);
+    }
   }
 
   resolveUI();
 });
 
   function resolveUI() {
-  if (!appReady || !authResolved) return;
+  const modal = document.getElementById("loginModal");
 
-  // 🔥 ГОЛОВНЕ ПРАВИЛО: offline-first
   const hasLocalData = words && words.length > 0;
 
+  // 🔥 якщо є Firebase user
   if (user) {
-    document.getElementById("loginModal").style.display = "none";
+    modal.style.display = "none";
     return;
   }
 
+  // 🟢 офлайн доступ
   if (hasLocalData) {
-    console.log("🟢 Offline access granted");
-    document.getElementById("loginModal").style.display = "none";
-  } else {
-    console.log("🔴 Need login");
-    document.getElementById("loginModal").style.display = "flex";
+    console.log("🟢 Offline mode");
+    modal.style.display = "none";
+    return;
   }
-}
 
+  // 🔴 і тільки тут логін
+  modal.style.display = "flex";
+}
 
 function decideAccess() {
   if (!authResolved) return;
@@ -266,6 +274,9 @@ function initApp() {
   // 4. try to resolve auth UI
   resolveUI();
 }
+
+
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // Sidebar
 function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
