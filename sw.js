@@ -4,9 +4,7 @@ const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./icon.png",
-  "./icon-192.png",
-  "./icon-512.png"
+  "./icon.png"
 ];
 
 // INSTALL
