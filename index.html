@@ -231,7 +231,7 @@ try{  const snap = await db.collection("users")
 function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
 function toggleCard(id){ const c=document.getElementById(id); c.style.display=c.style.display==='block'?'none':'block'; }
 function toggleTestCard(){ const c=document.getElementById('testCard'); c.style.display=c.style.display==='block'?'none':'block'; }
-function toggleLoginModal(){const c=document.getElementById('LoginModal'); c.style.display=c.style.display==='block'?'none':'block';}
+function toggleLoginModal(){document.getElementById("loginModal").style.display = "none";;}
 // --- Слова ---
 let userAnswers=[];
 let words=JSON.parse(localStorage.getItem("words")||"[]");
