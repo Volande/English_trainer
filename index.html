@@ -142,6 +142,12 @@ z-index:1000;">
 
 
 <script>
+
+let appReady = false;
+let authResolved = false;
+document.getElementById("loginModal").style.display = "flex";
+
+  
 // Firabase
 const firebaseConfig = {
   apiKey: "AIzaSyDJ62MDMp9T82_G20NHs6n_XfGILiEsLlU",
@@ -166,13 +172,37 @@ function login(){
 }
 
 // автологін
-auth.onAuthStateChanged(u => {
+auth.onAuthStateChanged(async (u) => {
   user = u;
   authResolved = true;
 
-  if (u) syncFromFirebase();
-  decideAccess();
+  if (u) {
+    await syncFromFirebase();
+    autoBackupCheck();
+  }
+
+  resolveUI();
 });
+
+  function resolveUI() {
+  if (!appReady || !authResolved) return;
+
+  // 🔥 ГОЛОВНЕ ПРАВИЛО: offline-first
+  const hasLocalData = words && words.length > 0;
+
+  if (user) {
+    document.getElementById("loginModal").style.display = "none";
+    return;
+  }
+
+  if (hasLocalData) {
+    console.log("🟢 Offline access granted");
+    document.getElementById("loginModal").style.display = "none";
+  } else {
+    console.log("🔴 Need login");
+    document.getElementById("loginModal").style.display = "flex";
+  }
+}
 
 
 
@@ -225,6 +255,20 @@ try{  const snap = await db.collection("users")
   renderWords();
 }
 
+
+function initApp() {
+  // 1. load local data FIRST
+  words = JSON.parse(localStorage.getItem("words") || "[]");
+
+  // 2. render immediately (offline-first)
+  renderWords();
+
+  // 3. mark app ready
+  appReady = true;
+
+  // 4. try to resolve auth UI
+  resolveUI();
+}
 
 // Sidebar
 function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
