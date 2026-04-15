@@ -39,23 +39,22 @@ self.addEventListener("activate", event => {
 
 // FETCH
 self.addEventListener("fetch", event => {
-  const url = new URL(event.request.url);
 
-  // 🔵 Firebase CDN — network first
-  if (url.origin.includes("gstatic.com")) {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
-    );
+  // ❗ ІГНОРУЄМО ВСІ НЕ-GET
+  if (event.request.method !== "GET") {
     return;
   }
 
-  // 🟢 App shell — cache first
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
 
       return fetch(event.request)
         .then(res => {
+
+          // ❗ додатковий захист
+          if (!res || res.status !== 200) return res;
+
           return caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, res.clone());
             return res;
