@@ -142,6 +142,7 @@ z-index:1000;">
 
 
 <script>
+  let words=JSON.parse(localStorage.getItem("words")||"[]");
 words = JSON.parse(localStorage.getItem("words") || "[]");
 renderWords();
 
@@ -285,7 +286,7 @@ function toggleTestCard(){ const c=document.getElementById('testCard'); c.style.
 function toggleLoginModal(){document.getElementById("loginModal").style.display = "none";;}
 // --- Слова ---
 let userAnswers=[];
-let words=JSON.parse(localStorage.getItem("words")||"[]");
+
 
 let testList = [];
 let totalQuestions = 0;
